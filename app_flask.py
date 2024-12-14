@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template_string
 import datetime
 import os
 import markdown2
@@ -76,6 +76,17 @@ def get_todolist():
 def get_automation():
     """Return automation projects."""
     return jsonify({"automation_projects": AUTOMATION_PROJECTS})
+
+
+@app.route('/landingpage')
+def landingpage():
+    """Return all routes with the 'v' version as HTML."""
+    routes = [rule.rule for rule in app.url_map.iter_rules() if rule.rule.startswith('/v')]
+    html_content = "<h1>Available Routes</h1><ul>"
+    for route in routes:
+        html_content += f"<li><a href='{route}'>{route}</a></li>"
+    html_content += "</ul>"
+    return render_template_string(html_content)
 
 if __name__ == '__main__':
     app.run(host='localhost', port=6462, debug=True)
