@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template_string
+from flask import Flask, jsonify, render_template_string, redirect
 import datetime
 import os
 import markdown2
@@ -77,6 +77,10 @@ def get_automation():
     """Return automation projects."""
     return jsonify({"automation_projects": AUTOMATION_PROJECTS})
 
+@app.route('/')
+def root():
+    """Redirect from root URL to /landingpage."""
+    return redirect('/landingpage')
 
 @app.route('/landingpage')
 def landingpage():
