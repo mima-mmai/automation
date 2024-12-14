@@ -2,8 +2,10 @@ from flask import Flask, jsonify
 import datetime
 import os
 import markdown2
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 # Sample data for other endpoints
 AUTOMATION_PROJECTS = [
