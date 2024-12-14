@@ -5,7 +5,95 @@
     <link rel="icon" type="image/svg+xml" href="/static/public/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>mmai API frontend</title>
+    <link rel="stylesheet" href="/static/style.css"><!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/static/public/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mmai API frontend</title>
     <link rel="stylesheet" href="/static/style.css">
+    <script type="module" src="/static/app.js"></script>
+
+    <script>
+      function testEndpoint(endpoint, method, body = null) {
+          fetch(endpoint, {
+              method: method,
+              headers: { 'Content-Type': 'application/json' },
+              body: body ? JSON.stringify(body) : null
+          })
+          .then(response => response.json())
+          .then(data => {
+              console.log(data);
+              updateStatusLine('OK', data);
+          })
+          .catch(err => {
+              console.error(err);
+              updateStatusLine('ERR', err);
+          });
+      }
+
+      function updateStatusLine(status, info) {
+          const statusLine = document.getElementById('status-line');
+          statusLine.textContent = `${status}: ${JSON.stringify(info)}`;
+      }
+    </script>
+
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <h1>Python API Dashboard</h1>
+        <div class="header-info">
+          <span id="greeting">Loading...</span>
+          <span id="current-date">Loading...</span>
+        </div>
+        <button id="refresh-btn" class="refresh-button">
+          Refresh Data
+        </button>
+      </header>
+
+      <main>
+        <div class="dashboard-grid">
+          <section class="dashboard-card">
+            <h2>Python Projects</h2>
+            <ul id="projects-list" class="projects-list">
+              <li>Loading projects...</li>
+            </ul>
+          </section>
+
+          <section class="dashboard-card">
+            <h2>Todo List</h2>
+            <div id="todo-content" class="todo-content">
+              Loading todo list...
+            </div>
+          </section>
+
+          <section class="dashboard-card">
+            <h2>Automation Projects</h2>
+            <div id="automation-list" class="automation-list">
+              Loading automation projects...
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <h1>Test CRUD Endpoints</h1>
+    <button onclick="testEndpoint('/v1/dateien/test.json', 'POST', {key: 'value'})">
+        Create File
+    </button>
+    <button onclick="testEndpoint('/v1/dateien/test.json', 'GET')">
+        Read File
+    </button>
+    <button onclick="testEndpoint('/v1/dateien/test.json', 'PUT', {key: 'newValue'})">
+        Update File
+    </button>
+
+    <div id="status-line">Status: Waiting for action...</div>
+
+  </body>
+</html>
     <script type="module" src="/static/app.js"></script>
 
     <script>
