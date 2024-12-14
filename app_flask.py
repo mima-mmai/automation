@@ -80,12 +80,16 @@ def get_py_projects():
 
 @app.route('/v1/get_todolist')
 def get_todolist():
-    FALLBACK ="TODO...:-)"
-    """Return the contents of todo.md file or a fallback message."""
-    todo_datei='todo.md'
     try:
-        gelesen=read_file('todo.md')
-        return markdown_to_html_with_checkboxes(gelesen)
+        # Call read_file function to read the file
+        response = read_file('todo.md')
+
+        if response[1] == 200:
+            markdown_content = response[0]
+            html_content = markdown_to_html_with_checkboxes(markdown_content)
+            return html_content, 200, {'Content-Type': 'text/html'}
+        else:
+            return response
     except Exception as e:
         return f"Fehler: {str(e)}", 500, {'Content-Type': 'text/plain'}
 
