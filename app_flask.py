@@ -51,7 +51,13 @@ def get_py_projects():
 def get_todolist():
     """Return the contents of todo.md file or a fallback message."""
     todo_file_path = r'C:\ai\mmai\todo.md'
-    FALLBACK = "# Heute \n## Essen\n - [ ] Frühstück\n - [ ] Mittag\n ## Sport\n-[ ] Joggen\n- [ ] radeln"
+    FALLBACK = """# Heute 
+## Essen
+- [ ] Frühstück
+- [ ] Mittag
+## Sport
+- [ ] Joggen
+- [ ] radeln"""
     
     try:
         # Check if the file exists
