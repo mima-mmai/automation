@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template_string, redirect
+from flask import Flask, jsonify, render_template_string, redirect, send_from_directory
 import datetime
 import os
 import markdown2
@@ -79,18 +79,13 @@ def get_automation():
 
 @app.route('/')
 def root():
-    """Redirect from root URL to /landingpage."""
-    return redirect('/landingpage')
+    """Redirect from root URL to /frontend/index.html."""
+    return redirect('/frontend/index.html')
 
-@app.route('/landingpage')
-def landingpage():
-    """Return all routes with the 'v' version as HTML."""
-    routes = [rule.rule for rule in app.url_map.iter_rules() if rule.rule.startswith('/v')]
-    html_content = "<h1>Available Routes</h1><ul>"
-    for route in routes:
-        html_content += f"<li><a href='{route}'>{route}</a></li>"
-    html_content += "</ul>"
-    return render_template_string(html_content)
+@app.route('/frontend/<path:path>')
+def send_frontend(path):
+    """Serve files from the frontend directory."""
+    return send_from_directory('frontend', path)
 
 if __name__ == '__main__':
     app.run(host='localhost', port=6462, debug=True)
