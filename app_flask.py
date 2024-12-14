@@ -4,7 +4,7 @@ import os
 import markdown2
 import json
 import re  
-import requests
+from flask import request
 
 from flask_cors import CORS
 
@@ -239,20 +239,22 @@ def test_dateien_endpoints():
     base_url = "http://localhost:6462/v1/dateien"
     test_file = "test.txt"
 
-    # Test POST
-    print("Testing Create (POST)...")
-    response = requests.post(f"{base_url}/{test_file}", data="Sample text")
-    print(response.json())
+    try:
+        # Test POST
+        print("Testing Create (POST)...")
+        response = requests.post(f"{base_url}/{test_file}", data="Sample text")
+        print(response.json())
+        # Test GET
+        print("Testing Read (GET)...")
+        response = requests.get(f"{base_url}/{test_file}")
+        print(response.text)
 
-    # Test GET
-    print("Testing Read (GET)...")
-    response = requests.get(f"{base_url}/{test_file}")
-    print(response.text)
-
-    # Test PUT
-    print("Testing Update (PUT)...")
-    response = requests.put(f"{base_url}/{test_file}", data="Updated text")
-    print(response.json())
+        # Test PUT
+        print("Testing Update (PUT)...")
+        response = requests.put(f"{base_url}/{test_file}", data="Updated text")
+        print(response.json())
+    except Exception as e:
+        return jsonify({"tut nicht": "{e}"}), 500   
 
 generate_crud_routes()
 
