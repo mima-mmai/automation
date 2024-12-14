@@ -79,15 +79,13 @@ def get_automation():
 
 @app.route('/')
 def root():
-    """Redirect from root URL to /frontend/index.html."""
-    return redirect('/frontend/index.html')
+    """Redirect from root URL to /static/index.html."""
+    return redirect('/static/index.html')
 
-@app.route('/frontend/<path:path>')
-def send_frontend(path):
-    """Serve files from the frontend directory."""
-    return send_from_directory('frontend', path)
-
-
+@app.route('/static/<path:path>')
+def send_static(path):
+    """Serve files from the static directory."""
+    return send_from_directory('static', path)
 
 @app.route('/api')
 def landingpage():
