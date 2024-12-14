@@ -11,7 +11,7 @@ from flask_cors import CORS
 app = Flask(__name__, static_url_path='/static')
 CORS(app)
 CONFIG_PATH = 'static/config/config.json'
-TODO_PATH = 'static/data/todo/todo.md'
+
 DATEIEN_PATH = 'static/dateien'
 # Sample data for other endpoints
 AUTOMATION_PROJECTS = [
@@ -80,39 +80,14 @@ def get_py_projects():
 
 @app.route('/v1/get_todolist')
 def get_todolist():
+    FALLBACK ="TODO...:-)"
     """Return the contents of todo.md file or a fallback message."""
     todo_datei='todo.md'
-    #todo_file_path = f"C:\\Users\\itbc000133\\AppData\\Local\\LOCALHOME\\repos\\py_upstream\\zisch\\projects\\web_localhost\\automatisierung\\static\\data\\todo\\{todo_datei}"
-    todo_file_path = f"/static/data/todo/{todo_datei}"
-    FALLBACK ="""
-# Heute 
-## Essen
-
-- [ ] Frühstück
-- [ ] Mittag
-## Sport
-
-- [ ] Joggen
-- [ ] radeln
-- !!!_todo_file_path_!!!
-"""
-    todo_contents="nix nada niente"
-    html_content="<p>nix nada niente</p>"
     try:
-        if os.path.exists(todo_file_path):
-            FALLBACK = FALLBACK.replace('!!!_todo_file_path_!!!', f"Loaded from {todo_file_path}")
-            with open(todo_file_path, 'r', encoding='utf-8') as file:
-                todo_contents = file.read()
-        else:
-            FALLBACK = FALLBACK.replace('!!!_todo_file_path_!!!', f"Not found: {todo_file_path}")
-            todo_contents=FALLBACK
-        html_content = markdown_to_html_with_checkboxes(todo_contents)
+        gelesen=read_file('todo.md')
+        return markdown_to_html_with_checkboxes(gelesen)
     except Exception as e:
-        return jsonify({
-            "Fehlerchen": "!",
-            "error": f"{e}"
-        }, 500)
-    return html_content
+        return f"Fehler: {str(e)}", 500, {'Content-Type': 'text/plain'}
 
 @app.route('/v1/get_automation')
 def get_automation():
@@ -165,6 +140,25 @@ def markdown_to_html_with_checkboxes(markdown_text):
 # Ensure the base directory exists
 os.makedirs(DATEIEN_PATH, exist_ok=True)
 
+@app.route('/v1/dateien/<path:path_param>', methods=['GET'])
+def read_file(path_param):
+    """Read a text or JSON file."""
+    try:
+        file_path = f"{DATEIEN_PATH}/{path_param}"
+        if not os.path.exists(file_path):
+            return jsonify({"message": "File not found"}), 404
+
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        if path_param.endswith('.json'):
+            data = json.loads(content)
+            return jsonify(data), 200
+        return content, 200, {'Content-Type': 'text/plain'}
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 # Generate CRUD routes
 def generate_crud_routes():
     @app.route('/v1/dateien/<path:path_param>', methods=['POST'])
@@ -187,23 +181,6 @@ def generate_crud_routes():
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
-    @app.route('/v1/dateien/<path:path_param>', methods=['GET'])
-    def read_file(path_param):
-        """Read a text or JSON file."""
-        try:
-            file_path = f"{DATEIEN_PATH}/{path_param}"
-            if not os.path.exists(file_path):
-                return jsonify({"message": "File not found"}), 404
-
-            with open(file_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-            
-            if path_param.endswith('.json'):
-                data = json.loads(content)
-                return jsonify(data), 200
-            return content, 200, {'Content-Type': 'text/plain'}
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
 
     @app.route('/v1/dateien/<path:path_param>', methods=['PUT'])
     def update_file(path_param):
