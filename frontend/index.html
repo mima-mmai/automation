@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Python API Dashboard</title>
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <h1>Python API Dashboard</h1>
+        <div class="header-info">
+          <span id="greeting">Loading...</span>
+          <span id="current-date">Loading...</span>
+        </div>
+        <button id="refresh-btn" class="refresh-button">
+          Refresh Data
+        </button>
+      </header>
+
+      <main>
+        <div class="dashboard-grid">
+          <section class="dashboard-card">
+            <h2>Python Projects</h2>
+            <ul id="projects-list" class="projects-list">
+              <li>Loading projects...</li>
+            </ul>
+          </section>
+
+          <section class="dashboard-card">
+            <h2>Todo List</h2>
+            <div id="todo-content" class="todo-content">
+              Loading todo list...
+            </div>
+          </section>
+
+          <section class="dashboard-card">
+            <h2>Automation Projects</h2>
+            <div id="automation-list" class="automation-list">
+              Loading automation projects...
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <script type="module" src="/src/app.js"></script>
+  </body>
+</html>
