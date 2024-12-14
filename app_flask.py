@@ -4,7 +4,7 @@ import os
 import markdown2
 from flask_cors import CORS
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 CORS(app)
 
 # Sample data for other endpoints
@@ -86,6 +86,11 @@ def root():
 def send_frontend(path):
     """Serve files from the frontend directory."""
     return send_from_directory('frontend', path)
+
+@app.route('/src/<path:path>')
+def send_static(path):
+    """Serve static files from the src directory."""
+    return send_from_directory('src', path)
 
 if __name__ == '__main__':
     app.run(host='localhost', port=6462, debug=True)
