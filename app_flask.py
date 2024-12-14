@@ -87,5 +87,24 @@ def send_frontend(path):
     """Serve files from the frontend directory."""
     return send_from_directory('frontend', path)
 
+
+
+@app.route('/api')
+def landingpage():
+    """Return all routes with the 'v' version as HTML."""
+    routes = [
+        "/v1/get_date",
+        "/v1/say_hello",
+        "/v1/get_py_projects",
+        "/v1/get_todolist",
+        "/v1/get_automation"
+    ]
+    html_content = "<h1>Available Routes</h1><ul>"
+    for route in routes:
+        html_content += f"<li><a href='{route}'>{route}</a></li>"
+    html_content += "</ul>"
+    return render_template_string(html_content)
+
+
 if __name__ == '__main__':
     app.run(host='localhost', port=6462, debug=True)
