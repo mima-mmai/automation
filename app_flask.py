@@ -46,16 +46,17 @@ def get_py_projects():
 
 @app.route('/v1/get_todolist')
 def get_todolist():
-    """Return the contents of todo.md file or an error message."""
+    """Return the contents of todo.md file or a fallback message."""
     todo_file_path = r'C:\ai\mmai\todo.md'
+    FALLBACK = "# Heute \n## Essen\n - [ ] Frühstück\n - [ ] Mittag\n ## Sport\n-[ ] Joggen\n- [ ] radeln"
     
     try:
         # Check if the file exists
         if not os.path.exists(todo_file_path):
             return jsonify({
-                "error": "Todo file not found", 
-                "path": todo_file_path
-            }), 404
+                "todo_file_path": todo_file_path,
+                "contents": FALLBACK
+            })
         
         # Read and return file contents
         with open(todo_file_path, 'r', encoding='utf-8') as file:
