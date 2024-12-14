@@ -1,5 +1,3 @@
-import './style.css'
-
 // API base URL
 const API_BASE = 'http://localhost:6462/v1';
 
