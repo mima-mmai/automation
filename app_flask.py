@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 import datetime
 import os
+import markdown2
 
 app = Flask(__name__)
 
@@ -53,19 +54,15 @@ def get_todolist():
     try:
         # Check if the file exists
         if not os.path.exists(todo_file_path):
-            return jsonify({
-                "todo_file_path": todo_file_path,
-                "contents": FALLBACK
-            })
+            html_content = markdown2.markdown(FALLBACK)
+            return html_content
         
         # Read and return file contents
         with open(todo_file_path, 'r', encoding='utf-8') as file:
             todo_contents = file.read()
         
-        return jsonify({
-            "todo_file_path": todo_file_path,
-            "contents": todo_contents
-        })
+        html_content = markdown2.markdown(todo_contents)
+        return html_content
     
     except Exception as e:
         return jsonify({
