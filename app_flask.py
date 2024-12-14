@@ -2,11 +2,17 @@ from flask import Flask, jsonify, render_template_string, redirect, send_from_di
 import datetime
 import os
 import markdown2
+import json
+import re  
+import requests
+
 from flask_cors import CORS
 
 app = Flask(__name__, static_url_path='/static')
 CORS(app)
-
+CONFIG_PATH = 'static/config/config.json'
+TODO_PATH = 'static/data/todo/todo.md'
+DATEIEN_PATH = 'static/dateien'
 # Sample data for other endpoints
 AUTOMATION_PROJECTS = [
     {
@@ -22,6 +28,31 @@ AUTOMATION_PROJECTS = [
         "status": "Planned"
     }
 ]
+
+
+@app.route('/v1/config', methods=['POST'])
+def create_config():
+    """Create a new JSON config."""
+    try:
+        data = request.json
+        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4)
+        return jsonify({"message": "Config created successfully"}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/v1/config', methods=['GET'])
+def read_config():
+    """Read the JSON config."""
+    try:
+        if not os.path.exists(CONFIG_PATH):
+            return jsonify({"message": "Config file not found"}), 404
+        with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        return jsonify(data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route('/v1/get_date')
 def get_date():
@@ -50,33 +81,38 @@ def get_py_projects():
 @app.route('/v1/get_todolist')
 def get_todolist():
     """Return the contents of todo.md file or a fallback message."""
-    todo_file_path = r'C:\ai\mmai\todo.md'
-    FALLBACK = """# Heute 
+    todo_datei='todo.md'
+    #todo_file_path = f"C:\\Users\\itbc000133\\AppData\\Local\\LOCALHOME\\repos\\py_upstream\\zisch\\projects\\web_localhost\\automatisierung\\static\\data\\todo\\{todo_datei}"
+    todo_file_path = f"/static/data/todo/{todo_datei}"
+    FALLBACK ="""
+# Heute 
 ## Essen
+
 - [ ] Frühstück
 - [ ] Mittag
 ## Sport
+
 - [ ] Joggen
-- [ ] radeln"""
-    
+- [ ] radeln
+- !!!_todo_file_path_!!!
+"""
+    todo_contents="nix nada niente"
+    html_content="<p>nix nada niente</p>"
     try:
-        # Check if the file exists
-        if not os.path.exists(todo_file_path):
-            html_content = markdown2.markdown(FALLBACK)
-            return html_content
-        
-        # Read and return file contents
-        with open(todo_file_path, 'r', encoding='utf-8') as file:
-            todo_contents = file.read()
-        
-        html_content = markdown2.markdown(todo_contents)
-        return html_content
-    
+        if os.path.exists(todo_file_path):
+            FALLBACK = FALLBACK.replace('!!!_todo_file_path_!!!', f"Loaded from {todo_file_path}")
+            with open(todo_file_path, 'r', encoding='utf-8') as file:
+                todo_contents = file.read()
+        else:
+            FALLBACK = FALLBACK.replace('!!!_todo_file_path_!!!', f"Not found: {todo_file_path}")
+            todo_contents=FALLBACK
+        html_content = markdown_to_html_with_checkboxes(todo_contents)
     except Exception as e:
         return jsonify({
-            "error": f"Error reading todo file: {str(e)}",
-            "path": todo_file_path
-        }), 500
+            "Fehlerchen": "!",
+            "error": f"{e}"
+        }, 500)
+    return html_content
 
 @app.route('/v1/get_automation')
 def get_automation():
@@ -109,6 +145,116 @@ def landingpage():
     html_content += "</ul>"
     return render_template_string(html_content)
 
+
+def markdown_to_html_with_checkboxes(markdown_text):
+    # Convert markdown to HTML
+    html_content = markdown2.markdown(markdown_text)
+    
+    # Define regex replacements for checkboxes
+    replacements = {
+        r'\[ \]': r'<input type="checkbox">',
+        r'\[x\]': r'<input type="checkbox" checked>',
+    }
+
+    # Apply replacements for task list checkboxes
+    for pattern, replacement in replacements.items():
+        html_content = re.sub(pattern, replacement, html_content, flags=re.IGNORECASE)
+
+    return html_content
+
+# Ensure the base directory exists
+os.makedirs(DATEIEN_PATH, exist_ok=True)
+
+# Generate CRUD routes
+def generate_crud_routes():
+    @app.route('/v1/dateien/<path:path_param>', methods=['POST'])
+    def create_file(path_param):
+        """Create a new text or JSON file."""
+        try:
+            file_path = f"{DATEIEN_PATH}/{path_param}"
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            content_type = request.headers.get('Content-Type', '')
+            
+            if 'application/json' in content_type:
+                data = request.json
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=4)
+            else:
+                data = request.data.decode('utf-8')
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.write(data)
+            return jsonify({"message": "File created successfully"}), 201
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    @app.route('/v1/dateien/<path:path_param>', methods=['GET'])
+    def read_file(path_param):
+        """Read a text or JSON file."""
+        try:
+            file_path = f"{DATEIEN_PATH}/{path_param}"
+            if not os.path.exists(file_path):
+                return jsonify({"message": "File not found"}), 404
+
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            if path_param.endswith('.json'):
+                data = json.loads(content)
+                return jsonify(data), 200
+            return content, 200, {'Content-Type': 'text/plain'}
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    @app.route('/v1/dateien/<path:path_param>', methods=['PUT'])
+    def update_file(path_param):
+        """Update a text or JSON file."""
+        try:
+            file_path = f"{DATEIEN_PATH}/{path_param}"
+            if not os.path.exists(file_path):
+                return jsonify({"message": "File not found"}), 404
+
+            content_type = request.headers.get('Content-Type', '')
+            if 'application/json' in content_type:
+                data = request.json
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=4)
+            else:
+                data = request.data.decode('utf-8')
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.write(data)
+            return jsonify({"message": "File updated successfully"}), 200
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+@app.route('/test')
+def test():
+    try:
+       test_dateien_endpoints()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    return jsonify({"und": "ok"}), 200
+# Internal test function
+def test_dateien_endpoints():
+    import requests
+    base_url = "http://localhost:6462/v1/dateien"
+    test_file = "test.txt"
+
+    # Test POST
+    print("Testing Create (POST)...")
+    response = requests.post(f"{base_url}/{test_file}", data="Sample text")
+    print(response.json())
+
+    # Test GET
+    print("Testing Read (GET)...")
+    response = requests.get(f"{base_url}/{test_file}")
+    print(response.text)
+
+    # Test PUT
+    print("Testing Update (PUT)...")
+    response = requests.put(f"{base_url}/{test_file}", data="Updated text")
+    print(response.json())
+
+generate_crud_routes()
 
 if __name__ == '__main__':
     app.run(host='localhost', port=6462, debug=True)
