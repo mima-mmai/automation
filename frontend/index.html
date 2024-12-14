@@ -7,6 +7,20 @@
     <title>mmai API frontend</title>
     <link rel="stylesheet" href="/static/style.css">
     <script type="module" src="/static/app.js"></script>
+
+    <script>
+      function testEndpoint(endpoint, method, body = null) {
+          fetch(endpoint, {
+              method: method,
+              headers: { 'Content-Type': 'application/json' },
+              body: body ? JSON.stringify(body) : null
+          })
+          .then(response => response.json())
+          .then(data => console.log(data))
+          .catch(err => console.error(err));
+      }
+  </script>
+
   </head>
   <body>
     <div id="app">
@@ -46,5 +60,18 @@
         </div>
       </main>
     </div>
+
+    <h1>Test CRUD Endpoints</h1>
+    <button onclick="testEndpoint('/v1/dateien/test.json', 'POST', {key: 'value'})">
+        Create File
+    </button>
+    <button onclick="testEndpoint('/v1/dateien/test.json', 'GET')">
+        Read File
+    </button>
+    <button onclick="testEndpoint('/v1/dateien/test.json', 'PUT', {key: 'newValue'})">
+        Update File
+    </button>
+
+
   </body>
 </html>
